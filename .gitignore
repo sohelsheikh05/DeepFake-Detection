@@ -5,3 +5,31 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+deepfake_env/
+venv/
+env/
+
+# Datasets
+DFDC_FAKE_Face_only_data/
+DFDC_REAL_Face_only_data/
+testing videos/
+data/
+Gobal_metadata.csv
+# Model outputs
+suspicious_frame_*.png
+temp_uploaded_video.mp4
+*.mp4
+*.avi
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
