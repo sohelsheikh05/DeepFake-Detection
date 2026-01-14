@@ -6,7 +6,7 @@ import os
 import gdown
 
 MODEL_PATH = "last_epoch_model.pth"
-MODEL_URL = "https://drive.google.com/uc?id=YOUR_FILE_ID"
+MODEL_URL = "https://drive.google.com/file/d/1vsRjCp5Gzl885y-ZGiOEMIiNetdH1eRp/view?usp=sharing"
 
 if not os.path.exists(MODEL_PATH):
     print("⬇️ Downloading model...")
