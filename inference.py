@@ -12,18 +12,21 @@ import gdown
 
 MODEL_PATH = "last_epoch_model.pth"
 MODEL_URL = "https://drive.google.com/file/d/1vsRjCp5Gzl885y-ZGiOEMIiNetdH1eRp/view"
-
-if not os.path.exists(MODEL_PATH):
-    print("⬇️ Downloading model...")
-    gdown.download(
-        MODEL_URL,
-        MODEL_PATH,
-        quiet=False,
-        fuzzy=True   # 🔥 THIS IS THE KEY
-    )
-
-
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def load_model():
+    model = Model(num_classes=2).to(DEVICE)
+    state_dict = torch.load(
+        MODEL_PATH,
+        map_location=DEVICE,
+        weights_only=False
+    )
+    model.load_state_dict(state_dict)
+    model.eval()
+    return model
+
+# model = load_model()
+
+
 
 
 import os, cv2, copy, time
@@ -215,21 +218,21 @@ def combined_temporal_score(grad_imp, occ_imp, alpha=0.7):
     return combined
 
 # ---------- Main pipeline ----------
-def run_forgery_localization_pipeline(video_path):
-    print("Loading trained model...")
-    model = Model(num_classes=2).to(DEVICE)
+def run_forgery_localization_pipeline(video_path,model):
+    # print("Loading trained model...")
+    # model = Model(num_classes=2).to(DEVICE)
 
-    state_dict = torch.load(
-        MODEL_PATH,
-        map_location=DEVICE,
-        weights_only=False
-    )
-    model.load_state_dict(state_dict)
-    model.eval()
+    # state_dict = torch.load(
+    #     MODEL_PATH,
+    #     map_location=DEVICE,
+    #     weights_only=False
+    # )
+    # model.load_state_dict(state_dict)
+    # model.eval()
 
-    print("Loaded:", MODEL_PATH)
+    # print("Loaded:", MODEL_PATH)
 
-    print("Extracting frames...")
+    # print("Extracting frames...")
     frames = extract_frames(video_path, seq_len=SEQ_LEN, resize=FRAME_SIZE)  # (seq_len, H, W, 3)
     input_tensor = preprocess_frames(frames).to(DEVICE)  # (1, seq_len, 3, H, W)
 
@@ -240,7 +243,7 @@ def run_forgery_localization_pipeline(video_path):
 
 # FIX 2: Avoid NaN
     if torch.isnan(probs).any():
-        print("Warning: NaN in probabilities → forcing zeros")
+        # print("Warning: NaN in probabilities → forcing zeros")
         probs = torch.where(torch.isnan(probs), torch.zeros_like(probs), probs)
 
     # Always move to CPU + numpy AFTER fixing NaN
@@ -251,21 +254,21 @@ def run_forgery_localization_pipeline(video_path):
     label_text = "FAKE" if pred_class == 0 else "REAL"
     conf = probs[pred_class]  # in [0,1]
 
-    print("Prediction:", label_text, "Confidence:", conf)
+    # print("Prediction:", label_text, "Confidence:", conf)
 
 
     # Spatial Grad-CAM
     try:
         cams = compute_gradcam_for_sequence(model, input_tensor, class_idx=None)
     except Exception as e:
-        print("Grad-CAM failed:", e)
+        # print("Grad-CAM failed:", e)
         cams = np.zeros((SEQ_LEN, FRAME_SIZE[1], FRAME_SIZE[0]), dtype=np.float32)
 
     # Temporal
     try:
         grad_imp = temporal_gradients(model, input_tensor, class_idx=None)
     except Exception as e:
-        print("Temporal gradient failed:", e)
+        # print("Temporal gradient failed:", e)
         grad_imp = np.zeros(SEQ_LEN, dtype=np.float32)
 
     occ_imp = None
@@ -273,7 +276,7 @@ def run_forgery_localization_pipeline(video_path):
         try:
             occ_imp = temporal_occlusion_importance(model, input_tensor, class_idx=None)
         except Exception as e:
-            print("Occlusion failed:", e)
+            # print("Occlusion failed:", e)
             occ_imp = None
 
     combined = combined_temporal_score(grad_imp, occ_imp, alpha=0.7)
@@ -325,7 +328,7 @@ def run_forgery_localization_pipeline(video_path):
         annotated_frames.append(overlay)
 
     # Save video
-    print("Saving suspicious frames only (no output video) ...")
+    # print("Saving suspicious frames only (no output video) ...")
 
     suspicious_count = 0
 
@@ -349,7 +352,6 @@ def run_forgery_localization_pipeline(video_path):
         plt.xlabel("Frame index")
         plt.ylabel("importance (0-1)")
         plt.grid(True)
-        plt.show()
     except Exception:
         pass
 

@@ -3,8 +3,16 @@ import os
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from inference import run_forgery_localization_pipeline
+
 import base64
+from inference import load_model, run_forgery_localization_pipeline
+
+@st.cache_resource
+def get_model():
+    return load_model()
+
+model = get_model()
+
 
 def show_video_small(video_path, width=420, height=240):
     with open(video_path, "rb") as f:
@@ -55,7 +63,7 @@ if uploaded_video:
     # -------------------------------
     if st.button("🚀 Run Deepfake Detection"):
         with st.spinner("Running model... Please wait..."):
-            results = run_forgery_localization_pipeline(video_path)
+            results = run_forgery_localization_pipeline(video_path,model)
 
         # -------------------------------
         # FINAL PREDICTION
