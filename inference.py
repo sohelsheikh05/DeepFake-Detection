@@ -4,15 +4,27 @@
 # Requires: torch, torchvision, numpy, cv2, matplotlib, tqdm
 import os
 import gdown
+import torch
+from model import Model
+
+import os
+import gdown
 
 MODEL_PATH = "last_epoch_model.pth"
-MODEL_URL = "https://drive.google.com/file/d/1vsRjCp5Gzl885y-ZGiOEMIiNetdH1eRp/view?usp=sharing"
+MODEL_URL = "https://drive.google.com/file/d/1vsRjCp5Gzl885y-ZGiOEMIiNetdH1eRp/view"
 
 if not os.path.exists(MODEL_PATH):
     print("⬇️ Downloading model...")
-    gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+    gdown.download(
+        MODEL_URL,
+        MODEL_PATH,
+        quiet=False,
+        fuzzy=True   # 🔥 THIS IS THE KEY
+    )
 
-from model import Model
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 import os, cv2, copy, time
 import numpy as np
@@ -209,12 +221,19 @@ def combined_temporal_score(grad_imp, occ_imp, alpha=0.7):
     return combined
 
 # ---------- Main pipeline ----------
-def run_forgery_localization_pipeline(video_path, weights_path="last_epoch_model.pth"):
+def run_forgery_localization_pipeline(video_path):
     print("Loading trained model...")
     model = Model(num_classes=2).to(DEVICE)
-    model.load_state_dict(torch.load("last_epoch_model.pth", map_location=DEVICE))
+
+    state_dict = torch.load(
+        MODEL_PATH,
+        map_location=DEVICE,
+        weights_only=False
+    )
+    model.load_state_dict(state_dict)
     model.eval()
-    print("Loaded:", weights_path)
+
+    print("Loaded:", MODEL_PATH)
 
     print("Extracting frames...")
     frames = extract_frames(video_path, seq_len=SEQ_LEN, resize=FRAME_SIZE)  # (seq_len, H, W, 3)
