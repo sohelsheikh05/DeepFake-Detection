@@ -2,6 +2,16 @@
 # Paste this cell AFTER your Model class definition.
 # Expects best_model.pth in notebook working directory.
 # Requires: torch, torchvision, numpy, cv2, matplotlib, tqdm
+import os
+import gdown
+
+MODEL_PATH = "last_epoch_model.pth"
+MODEL_URL = "https://drive.google.com/uc?id=YOUR_FILE_ID"
+
+if not os.path.exists(MODEL_PATH):
+    print("⬇️ Downloading model...")
+    gdown.download(MODEL_URL, MODEL_PATH, quiet=False)
+
 from model import Model
 
 import os, cv2, copy, time
