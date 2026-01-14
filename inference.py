@@ -31,7 +31,6 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
-from tkinter.filedialog import askopenfilename
 import torch
 torch.backends.cudnn.enabled = False
 
@@ -47,12 +46,7 @@ OCCLUSION_MODE = True
 # ----------------------------
 
 # ---------- Utilities ----------
-def select_video_via_dialog():
-    print("Select video file...")
-    path = askopenfilename(title="Select a video")
-    if path == '':
-        raise FileNotFoundError("No file selected.")
-    return path
+
 
 def extract_frames(video_path, seq_len=SEQ_LEN, resize=FRAME_SIZE):
     cap = cv2.VideoCapture(video_path)
