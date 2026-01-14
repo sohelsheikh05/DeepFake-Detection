@@ -1,2 +1,7 @@
 *.pth
 last_epoch_model.pth
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
